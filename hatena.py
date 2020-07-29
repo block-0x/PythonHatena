@@ -18,7 +18,7 @@ class HatenaScraper(object):
         self.channel_videos_url = os.path.join(self.youtube_url, 'search', self.user_name)
         self.titles = []
         self.video_urls = []
-        # self.views = []
+        self.tags = []
 
     def run(self):
         #ソースの取得
@@ -66,20 +66,42 @@ class HatenaScraper(object):
             # print(i)
             title = (i.get("title"))
             url = (i.get("href"))
-            # tag = (i.get("a href=/search/"))
+            tag_x = (i.get("title"))
+            # view_text = (re.findall('前 .*回視聴', view_material))
             # # 再生回数の材料
             # view_material_text = (i.get("href=/search/tag?"))
             if title is None:
                 continue
             elif url is None:
                 continue
+            elif tag_x is None:
+                continue
+            tag_x = title.replace('　', ' ')
+            # print(tag_x)
+            tag_y = re.findall('[0-9]+', tag_x)
+            if len(tag_y) > 1:
+                tag = tag_y[-1]
+            else:
+                tag_z = tag_y
+                tag = ','.join(tag_z)
+                print(tag)
+                # tag = tag_y[-1]
+            # print(tag)
+            # tag_y =  tag_x.replace('　', ' ')
+            # print(tag_y)
+            # tag = (re.findall(' (*ブックマーク)', tag_y))
+            # print(tag_y)
+            # tag = title
+            # if 'href="/search/tag?q=' in url:
+            #     print(i)
+            # print(tag)
+            # if "/search/tag?q=" in tag:
             # print(title)
             # elif view_material_text is None:
             #     continue
             # 再生回数の材料の空白を削除
             # view_material = view_material_text.replace('　', ' ')
             # # 文字列中の前から回視聴以外を削除
-            # view_text = (re.findall('前 .*回視聴', view_material))
             # if view_text:
             #     # if view_text in ' 秒 ':
             #     # view_text = (re.findall('前 .*回視聴', view_material))
@@ -107,9 +129,9 @@ class HatenaScraper(object):
             # view_text = str(view_text)
             # view = (re.sub("\\D", "", view_text))
             if "/entry/s/" in url:
-                print(url)
                 self.titles.append(title)
                 self.video_urls.append(url)
+                self.tags.append(tag)
                 # self.views.append(view)
 
     def save_as_csv_file(self):
@@ -119,7 +141,7 @@ class HatenaScraper(object):
         data = {
          "title": self.titles,
          "url": self.video_urls,
-         # "view": self.views
+         "tag": self.tags
         }
         pd.DataFrame(data).to_csv(self.csv_file_path,index=False)
 
